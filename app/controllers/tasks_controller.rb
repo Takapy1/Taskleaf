@@ -1,8 +1,8 @@
 class TasksController < ApplicationController
-  # protect_from_forgery :except => [:destroy]
+  before_action :set_task, only: %i(show edit update destroy)
 
   def index
-    @tasks = Task.all
+    @tasks = current_user.tasks.recent
   end
 
   def new
@@ -10,7 +10,9 @@ class TasksController < ApplicationController
   end
 
   def create
-    @task = Task.new(task_params)
+    @task = current_user.tasks.new(task_params)
+    # @task = Task.new(task_params.merge(user_id: current_user.id))
+    
     if @task.save
       redirect_to @task, notice: "タスク 「#{@task.name}」 を作成しました。"
     else
@@ -19,15 +21,13 @@ class TasksController < ApplicationController
   end
 
   def show
-    @task = Task.find(params[:id])
   end
 
   def edit
-    @task = Task.find(params[:id])
+    
   end
 
   def update
-    @task = Task.find(params[:id])
     if @task.update(task_params)
       redirect_to @task, notice: "タスク 「#{@task.name}」の更新しました。"
     else
@@ -36,13 +36,17 @@ class TasksController < ApplicationController
   end
 
   def destroy
-    task = Task.find(params[:id])
     task.destroy
     redirect_to tasks_url, notice: "タスク「#{task.name}」を削除しました。"
   end
 
   private
+
   def task_params
     params.require(:task).permit(:name, :description)
+  end
+
+  def set_task
+    @task = current_user.tasks.find(params[:id])
   end
 end

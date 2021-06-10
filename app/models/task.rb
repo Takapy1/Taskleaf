@@ -1,5 +1,8 @@
 class Task < ApplicationRecord
   before_validation :set_nameless_name
+  belongs_to :user, dependent: :destroy
+
+  scope :recent, -> { order(created_at: :desc) }
 
   validates :name,
     presence: true,
